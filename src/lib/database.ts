@@ -66,16 +66,6 @@ export const initializeDatabase = async () => {
       createdAt TEXT NOT NULL
     );
   `);
-
-  const existingUser = await db.getFirstAsync<User>('SELECT * FROM users LIMIT 1');
-  if (!existingUser) {
-    const now = new Date().toISOString();
-    const userId = 'user-device';
-    await db.runAsync(
-      'INSERT INTO users (id, fullName, email, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?)',
-      [userId, 'Farm Admin', 'farm@example.com', now, now],
-    );
-  }
 };
 
 export const getDb = () => db;
@@ -88,6 +78,15 @@ export const createUser = async (user: User) => {
 };
 
 export const getUsers = async (): Promise<User[]> => db.getAllAsync<User>('SELECT * FROM users ORDER BY createdAt DESC');
+
+export const getFirstUser = async (): Promise<User | null> => db.getFirstAsync<User>('SELECT * FROM users ORDER BY createdAt DESC');
+
+export const updateUser = async (user: User) => {
+  await db.runAsync(
+    'UPDATE users SET fullName = ?, email = ?, profileImageLocalUri = ?, profileImageUrl = ?, updatedAt = ? WHERE id = ?',
+    [user.fullName, user.email, user.profileImageLocalUri ?? null, user.profileImageUrl ?? null, user.updatedAt, user.id],
+  );
+};
 
 export const getAnimals = async (): Promise<Animal[]> => db.getAllAsync<Animal>('SELECT * FROM animals ORDER BY createdAt DESC');
 
